@@ -1,0 +1,408 @@
+openapi: 3.0.3
+info:
+  title: Customer Service API
+  version: 1.0.0
+  description: Reactive Customer microservice (WebFlux) for managing bank customers.
+servers:
+  - url: /api/v1
+tags:
+  - name: Customers
+    description: Customer management endpoints
+
+paths:
+  /customers:
+    post:
+      tags: [Customers]
+      summary: Create a customer
+      operationId: createCustomer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCustomerRequest"
+            examples:
+              personal:
+                summary: Personal customer
+                value:
+                  type: PERSONAL
+                  documentType: DNI
+                  documentNumber: "12345678"
+                  fullName: John Doe
+                  email: john@doe.com
+                  phone: "+51-999999999"
+                  address: Lima, PE
+              business:
+                summary: Business customer
+                value:
+                  type: BUSINESS
+                  documentType: RUC
+                  documentNumber: "20123456789"
+                  companyName: ACME Corp
+                  email: contact@acme.com
+                  phone: "+51-999999999"
+                  address: Lima, PE
+      responses:
+        "201":
+          description: Customer created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomerResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "409":
+          $ref: "#/components/responses/DuplicateDocumentNumber"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+    get:
+      tags: [Customers]
+      summary: Search customers
+      operationId: searchCustomers
+      parameters:
+        - in: query
+          name: documentNumber
+          schema:
+            type: string
+          required: false
+        - in: query
+          name: type
+          schema:
+            $ref: "#/components/schemas/CustomerType"
+          required: false
+        - in: query
+          name: status
+          schema:
+            $ref: "#/components/schemas/CustomerStatus"
+          required: false
+      responses:
+        "200":
+          description: Matching customers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CustomerResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /customers/{customerId}:
+    get:
+      tags: [Customers]
+      summary: Get customer by id
+      operationId: getCustomerById
+      parameters:
+        - $ref: "#/components/parameters/CustomerId"
+      responses:
+        "200":
+          description: Customer found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomerResponse"
+        "404":
+          $ref: "#/components/responses/CustomerNotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+    patch:
+      tags: [Customers]
+      summary: Update customer (partial)
+      operationId: updateCustomer
+      parameters:
+        - $ref: "#/components/parameters/CustomerId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCustomerRequest"
+            examples:
+              update:
+                value:
+                  email: new@mail.com
+                  phone: "+51-111111111"
+                  address: "New address"
+      responses:
+        "200":
+          description: Customer updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomerResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/CustomerNotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /customers/{customerId}/status:
+    patch:
+      tags: [Customers]
+      summary: Change customer status
+      operationId: changeCustomerStatus
+      parameters:
+        - $ref: "#/components/parameters/CustomerId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangeStatusRequest"
+            examples:
+              deactivate:
+                value:
+                  status: INACTIVE
+      responses:
+        "200":
+          description: Status changed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomerResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/CustomerNotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /customers/{customerId}/profile:
+    get:
+      tags: [Customers]
+      summary: Get lightweight customer profile (for other services)
+      operationId: getCustomerProfile
+      parameters:
+        - $ref: "#/components/parameters/CustomerId"
+      responses:
+        "200":
+          description: Customer profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomerProfileResponse"
+        "404":
+          $ref: "#/components/responses/CustomerNotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+components:
+  parameters:
+    CustomerId:
+      name: customerId
+      in: path
+      required: true
+      schema:
+        type: string
+      description: MongoDB ObjectId (string)
+
+  responses:
+    ValidationError:
+      description: Request validation error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            code: VALIDATION_ERROR
+            message: "documentNumber is required"
+            details:
+              - field: documentNumber
+                issue: "must not be blank"
+            timestamp: "2025-12-15T10:20:30Z"
+
+    DuplicateDocumentNumber:
+      description: Duplicate document number
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            code: DUPLICATE_DOCUMENT_NUMBER
+            message: "A customer with the same documentNumber already exists"
+            details: []
+            timestamp: "2025-12-15T10:20:30Z"
+
+    CustomerNotFound:
+      description: Customer not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            code: CUSTOMER_NOT_FOUND
+            message: "Customer not found"
+            details: []
+            timestamp: "2025-12-15T10:20:30Z"
+
+    InternalError:
+      description: Unexpected error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            code: INTERNAL_ERROR
+            message: "Unexpected error"
+            details: []
+            timestamp: "2025-12-15T10:20:30Z"
+
+  schemas:
+    CustomerType:
+      type: string
+      enum: [PERSONAL, BUSINESS]
+
+    CustomerStatus:
+      type: string
+      enum: [ACTIVE, INACTIVE]
+
+    CreateCustomerRequest:
+      type: object
+      required: [type, documentType, documentNumber]
+      additionalProperties: false
+      properties:
+        type:
+          $ref: "#/components/schemas/CustomerType"
+        documentType:
+          type: string
+          minLength: 1
+          example: DNI
+        documentNumber:
+          type: string
+          minLength: 1
+          example: "12345678"
+        fullName:
+          type: string
+          example: John Doe
+          description: Required when type=PERSONAL
+        companyName:
+          type: string
+          example: ACME Corp
+          description: Required when type=BUSINESS
+        email:
+          type: string
+          format: email
+          example: john@doe.com
+        phone:
+          type: string
+          example: "+51-999999999"
+        address:
+          type: string
+          example: Lima, PE
+      description: >
+        Business rules:
+        - If type=PERSONAL, fullName is required and companyName should be null/omitted.
+        - If type=BUSINESS, companyName is required and fullName should be null/omitted.
+
+    UpdateCustomerRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        fullName:
+          type: string
+        companyName:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        address:
+          type: string
+      description: Partial update. Type/documentNumber are not editable.
+
+    ChangeStatusRequest:
+      type: object
+      required: [status]
+      additionalProperties: false
+      properties:
+        status:
+          $ref: "#/components/schemas/CustomerStatus"
+
+    CustomerResponse:
+      type: object
+      required: [id, type, documentType, documentNumber, status, createdAt, updatedAt]
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          example: "656f1c9e8d1c2a3b4c5d6e7f"
+        type:
+          $ref: "#/components/schemas/CustomerType"
+        documentType:
+          type: string
+          example: DNI
+        documentNumber:
+          type: string
+          example: "12345678"
+        fullName:
+          type: string
+          nullable: true
+        companyName:
+          type: string
+          nullable: true
+        email:
+          type: string
+          format: email
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+        address:
+          type: string
+          nullable: true
+        status:
+          $ref: "#/components/schemas/CustomerStatus"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CustomerProfileResponse:
+      type: object
+      required: [id, type, documentNumber, status]
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+        type:
+          $ref: "#/components/schemas/CustomerType"
+        documentNumber:
+          type: string
+        status:
+          $ref: "#/components/schemas/CustomerStatus"
+
+    ErrorDetail:
+      type: object
+      required: [field, issue]
+      additionalProperties: false
+      properties:
+        field:
+          type: string
+        issue:
+          type: string
+
+    ErrorResponse:
+      type: object
+      required: [code, message, details, timestamp]
+      additionalProperties: false
+      properties:
+        code:
+          type: string
+          example: VALIDATION_ERROR
+        message:
+          type: string
+        details:
+          type: array
+          items:
+            $ref: "#/components/schemas/ErrorDetail"
+        timestamp:
+          type: string
+          format: date-time

@@ -1,0 +1,102 @@
+openapi: "3.0.1"
+info:
+  title: creditcard-mongodb API
+  version: 1.0.0
+  description: API para gestionar tarjetas de crédito persistidas en MongoDB.
+
+servers:
+  - url: http://localhost:8080
+    description: Servidor local
+
+paths:
+  /api/cards:
+    get:
+      summary: Listar tarjetas
+      operationId: getAllCards
+      responses:
+        "200":
+          description: Lista de tarjetas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CreditCardResponse"
+
+    post:
+      summary: Crear una nueva tarjeta de crédito
+      operationId: registerCreditCard
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreditCardRequest"
+      responses:
+        "200":
+          description: Tarjeta creada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreditCardResponse"
+
+
+  /api/cards/{id}:
+    get:
+      summary: Obtener tarjeta por ID
+      operationId: getCardById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID de la tarjeta
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Tarjeta encontrada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreditCardResponse"
+        "404":
+          description: Tarjeta no encontrada
+
+components:
+  schemas:
+    CreditCardRequest:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID único de la tarjeta de crédito
+        cardNumber:
+          type: string
+          description: Número de la tarjeta de crédito
+        accountHolder:
+          type: string
+          description: Titular de la cuenta
+        balance:
+          type: number
+          description: Saldo disponible en la tarjeta
+        creditLimit:
+          type: number
+          description: Límite de crédito disponible
+    CreditCardResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID único de la tarjeta de crédito
+        cardNumber:
+          type: string
+          description: Número de la tarjeta de crédito
+        accountHolder:
+          type: string
+          description: Titular de la cuenta
+        balance:
+          type: number
+          description: Saldo disponible en la tarjeta
+        creditLimit:
+          type: number
+          description: Límite de crédito disponible

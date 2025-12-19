@@ -1,0 +1,59 @@
+[{
+  "_id": {
+    "$oid": "66fc2bf9861ea7607d964bac"
+  },
+  "cardNumber": "1234-5678-9123-4567",
+  "accountHolder": "Jose Diaz",
+  "balance": 500,
+  "creditLimit": 2000
+},
+  {
+    "_id": {
+      "$oid": "66fc8e6c25042d50c373311c"
+    },
+    "cardNumber": "1234-5678-9123-4567",
+    "accountHolder": "Julio Ramos",
+    "balance": "500",
+    "creditLimit": "2000",
+    "_class": "com.nttdata.creditcards.model.entity.CreditCard"
+  },
+  {
+    "_id": {
+      "$oid": "66fc8e9f25042d50c373311d"
+    },
+    "cardNumber": "1234-5678-9123-4556",
+    "accountHolder": "Julio Rios",
+    "balance": "400",
+    "creditLimit": "6000",
+    "_class": "com.nttdata.creditcards.model.entity.CreditCard"
+  },
+  {
+    "_id": {
+      "$oid": "66fc97260525c737faf6a10c"
+    },
+    "cardNumber": "1234-5678-9123-5556",
+    "accountHolder": "Fabiola Rios",
+    "balance": "500",
+    "creditLimit": "4000",
+    "_class": "com.nttdata.creditcards.model.entity.CreditCard"
+  },
+  {
+    "_id": {
+      "$oid": "66fcbd898756d200c5a52b5b"
+    },
+    "cardNumber": "1234-5678-9123-7666",
+    "accountHolder": "Enrique Bunbury",
+    "balance": "500.50",
+    "creditLimit": "6000",
+    "_class": "com.nttdata.creditcards.model.entity.CreditCard"
+  },
+  {
+    "_id": {
+      "$oid": "66fcc0e2252d4b00b175853f"
+    },
+    "cardNumber": "1234-5678-9123-7645",
+    "accountHolder": "Victor Rioja",
+    "balance": "100",
+    "creditLimit": "1000",
+    "_class": "com.nttdata.creditcards.model.entity.CreditCard"
+  }]
